@@ -1,9 +1,34 @@
-# Spring-data-seeder
-spring-data-seeder is a lightweight library for Spring Boot applications that enables automatic database seeding
+# Spring data seeder
 
-## Definição da lib
+## Objetivo da Spring data seeder
 
-# TODO – spring-data-seeder
+**spring-data-seeder** é uma biblioteca para aplicações **Spring Boot** que facilita a **população automática do banco de dados** através de funções anotadas, sem necessidade de registrar manualmente cada seeder.
+
+### O que a lib faz:
+
+1. **Descoberta automática de seeders**
+   - Toda função ou método anotado com `@Seeder` é detectado automaticamente.
+   - Funciona com beans Spring ou funções top-level Kotlin.
+
+2. **Execução ordenada**
+   - Seeders são executados em ordem crescente usando `@Order`.
+   - Se não houver ordem definida, é usada uma ordem padrão (`Ordered.LOWEST_PRECEDENCE`).
+
+3. **Execução automática e manual**
+   - Seeders podem ser executados automaticamente no startup da aplicação.
+   - Também podem ser executados manualmente via linha de comando ou flag (`--seed`).
+
+4. **Modularidade e escalabilidade**
+   - Cada seeder é independente.
+   - Novos seeders podem ser adicionados sem tocar em nenhum arquivo central.
+
+5. **Logs claros e rastreáveis**
+   - Exibe qual seeder está sendo executado, início/fim da execução e possíveis erros.
+   - Permite acompanhamento e depuração da execução.
+
+6. **Suporte a profiles e execução condicional**
+   - Pode configurar para rodar apenas em determinados profiles (ex: dev, test, prod).
+   - Possibilidade de pular execução automática quando necessário.
 
 ## 1️⃣ Planejamento / Arquitetura
 
