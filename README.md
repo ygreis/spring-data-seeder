@@ -140,19 +140,25 @@
 2. Infra de pastas da lib
 
 ```text
-src/main/kotlin/com/seuprojeto/
-├─ seeders/
-│ ├─ UserSeeder.kt
-│ ├─ ProductSeeder.kt
-│ └─ ... outros seeders
-├─ core/
-│ ├─ SeederFunction.kt
-│ ├─ SeederRunner.kt
-│ └─ annotations/
-│ ├─ Seeder.kt
-│ └─ Order.kt
-├─ auto/
-│ └─ SeederAutoRunner.kt
-├─ examples/
-│ └─ DemoSeeder.kt
+src/main/kotlin/com/spring/data/seeder
+├─ seeders/                # Todos os seeders criados pelos devs
+│   ├─ UserSeeder.kt
+│   ├─ ProductSeeder.kt
+│   └─ ... outros seeders
+├─ core/                   # Núcleo da lib
+│   ├─ SeederFunction.kt    # Interface funcional que representa uma função seeder
+│   ├─ SeederRunner.kt      # Executor que roda os seeders
+│   └─ annotations/         # Anotações da biblioteca
+│       ├─ Seeder.kt
+│       └─ Order.kt
+├─ launcher/               # Responsável por orquestrar a execução
+│   ├─ SeederLauncher.kt   # Combina discoverer e executor
+│   └─ SeederDiscoverer.kt # Descobre seeders no contexto Spring ou top-level
+├─ auto/                   # Integração automática com Spring Boot
+│   └─ SeederAutoRunner.kt  # Roda os seeders automaticamente no startup
+├─ examples/               # Exemplos de seeders para referência e testes
+│   └─ DemoSeeder.kt
+├─ config/                 # Configurações da lib (opcional)
+│   └─ SeederConfig.kt
+
  ```
