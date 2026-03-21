@@ -20,6 +20,7 @@ class ProductSeeder(
             val products = productFactory.times(2).make { product ->
                 product.copy(
                     userId = user.id,
+                    name = "${user.name} ${product.name}",
                 )
             }
 

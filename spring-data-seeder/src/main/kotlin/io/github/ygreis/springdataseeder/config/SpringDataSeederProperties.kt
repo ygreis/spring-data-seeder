@@ -4,6 +4,6 @@ import org.springframework.boot.context.properties.ConfigurationProperties
 
 @ConfigurationProperties(prefix = "spring.data.seeder")
 data class SpringDataSeederProperties(
-    var enabled: Boolean = true,
-    var runOnStartup: Boolean = true,
+    var enabled: Boolean = false,
+    var target: String? = null,
 )

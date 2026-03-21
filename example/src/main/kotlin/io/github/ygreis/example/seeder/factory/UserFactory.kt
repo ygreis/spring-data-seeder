@@ -9,13 +9,11 @@ import java.util.concurrent.atomic.AtomicInteger
 @Component
 class UserFactory : AbstractFactory<User>() {
 
-    private val counter = AtomicInteger(1)
     private val faker = Faker()
 
     override fun definition(): User {
-        val value = counter.getAndIncrement()
         return User(
-            name = "${faker.name().fullName()} + $value",
+            name = faker.name().fullName(),
             email = faker.internet().emailAddress(),
         )
     }

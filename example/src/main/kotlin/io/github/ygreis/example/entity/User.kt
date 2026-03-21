@@ -15,6 +15,6 @@ data class User(
     var id: Long? = null,
     @Column(nullable = false)
     var name: String = "",
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false)
     var email: String = "",
 )

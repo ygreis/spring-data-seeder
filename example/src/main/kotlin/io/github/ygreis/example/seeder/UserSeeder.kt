@@ -12,10 +12,6 @@ class UserSeeder(
 ) : Seeder {
 
     override fun run() {
-        // Create ADM
-        userRepository.save(userFactory.make().copy(name = "ADM MAX"))
-
-        // Create random users
         val users = userFactory.times(10).make()
         userRepository.saveAll(users)
     }
