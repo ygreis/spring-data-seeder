@@ -1,4 +1,4 @@
-package io.github.ygreis.example.user
+package io.github.ygreis.example.entity
 
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
@@ -9,12 +9,12 @@ import jakarta.persistence.Table
 
 @Entity
 @Table(name = "users")
-class User(
+data class User(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    val id: Long? = null,
+    var id: Long? = null,
     @Column(nullable = false)
-    val name: String,
+    var name: String = "",
     @Column(nullable = false, unique = true)
-    val email: String,
+    var email: String = "",
 )

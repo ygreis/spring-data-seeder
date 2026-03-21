@@ -10,6 +10,7 @@ class DatabaseSeeder(
 ) : AbstractDatabaseSeeder(applicationContext) {
 
     override fun run() {
-        call(UserSeeder::class.java)
+        call<UserSeeder>()
+        call<ProductSeeder>()
     }
 }

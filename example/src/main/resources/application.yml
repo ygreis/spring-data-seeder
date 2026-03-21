@@ -12,3 +12,7 @@ spring:
     hibernate:
       ddl-auto: create-drop
     show-sql: true
+  data:
+    seeder:
+      enabled: true
+      run-on-startup: true

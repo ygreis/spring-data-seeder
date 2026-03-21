@@ -26,6 +26,8 @@ dependencies {
 
     implementation("org.springframework:spring-context:6.2.12")
     implementation("org.springframework.data:spring-data-commons:3.5.5")
+    implementation("org.springframework.boot:spring-boot-autoconfigure:3.5.5")
+    implementation("org.springframework.boot:spring-boot:3.5.5")
 
     testImplementation(kotlin("test"))
 }

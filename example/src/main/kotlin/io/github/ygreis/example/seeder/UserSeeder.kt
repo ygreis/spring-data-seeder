@@ -1,21 +1,22 @@
 package io.github.ygreis.example.seeder
 
-import io.github.ygreis.example.user.User
-import io.github.ygreis.example.user.UserRepository
+import io.github.ygreis.example.seeder.factory.UserFactory
+import io.github.ygreis.example.repository.UserRepository
 import io.github.ygreis.springdataseeder.Seeder
 import org.springframework.stereotype.Component
 
 @Component
 class UserSeeder(
+    private val userFactory: UserFactory,
     private val userRepository: UserRepository,
 ) : Seeder {
 
     override fun run() {
-        userRepository.saveAll(
-            listOf(
-                User(name = "Ada Lovelace", email = "ada@example.com"),
-                User(name = "Grace Hopper", email = "grace@example.com"),
-            )
-        )
+        // Create ADM
+        userRepository.save(userFactory.make().copy(name = "ADM MAX"))
+
+        // Create random users
+        val users = userFactory.times(10).make()
+        userRepository.saveAll(users)
     }
 }

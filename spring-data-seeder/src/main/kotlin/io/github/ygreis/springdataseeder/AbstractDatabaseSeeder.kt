@@ -10,4 +10,8 @@ abstract class AbstractDatabaseSeeder(
         val seeder = applicationContext.getBean(seederClass)
         seeder.run()
     }
+
+    protected inline fun <reified T : Seeder> call() {
+        call(T::class.java)
+    }
 }
