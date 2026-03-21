@@ -1,164 +1,247 @@
-# Spring data seeder
+# spring-data-seeder
 
-## Objetivo da Spring data seeder
+`spring-data-seeder` is a small Kotlin-first library for organizing and running database seeders in Spring Boot applications.
 
-**spring-data-seeder** é uma biblioteca para aplicações **Spring Boot** que facilita a **população automática do banco de dados** através de funções anotadas, sem necessidade de registrar manualmente cada seeder.
+It focuses on a simple model:
 
-### O que a lib faz:
+- define seeders as Spring beans
+- orchestrate them explicitly from one aggregate seeder
+- run everything through Spring, not custom reflection-heavy infrastructure
+- use small factories when test or demo data needs structure
 
-1. **Descoberta automática de seeders**
-   - Toda função ou método anotado com `@Seeder` é detectado automaticamente.
-   - Funciona com beans Spring ou funções top-level Kotlin.
+## What problem it solves
 
-2. **Execução ordenada**
-   - Seeders são executados em ordem crescente usando `@Order`.
-   - Se não houver ordem definida, é usada uma ordem padrão (`Ordered.LOWEST_PRECEDENCE`).
+Seeding data in Spring Boot projects often drifts into ad hoc scripts, startup-only code, or large one-off bootstrap classes.
 
-3. **Execução automática e manual**
-   - Seeders podem ser executados automaticamente no startup da aplicação.
-   - Também podem ser executados manualmente via linha de comando ou flag (`--seed`).
+This project keeps seeding explicit and readable:
 
-4. **Modularidade e escalabilidade**
-   - Cada seeder é independente.
-   - Novos seeders podem ser adicionados sem tocar em nenhum arquivo central.
+- each seeder is a normal Spring bean
+- one aggregate seeder controls execution flow
+- seeders can be executed from Gradle without turning seeding into always-on startup behavior
+- factories keep repetitive entity creation concise
 
-5. **Logs claros e rastreáveis**
-   - Exibe qual seeder está sendo executado, início/fim da execução e possíveis erros.
-   - Permite acompanhamento e depuração da execução.
+## Benefits
 
-6. **Suporte a profiles e execução condicional**
-   - Pode configurar para rodar apenas em determinados profiles (ex: dev, test, prod).
-   - Possibilidade de pular execução automática quando necessário.
+- Small API surface
+- Idiomatic Kotlin
+- Works with standard Spring Boot beans and repositories
+- Clear separation between orchestration and individual seed logic
+- Supports targeted execution of a single seeder
+- Includes a practical `example` module with Spring Boot, JPA, H2, and factories
 
-## 1️⃣ Planejamento / Arquitetura
+## How it works
 
-- [ ] Definir objetivo da lib: popular banco de dados automaticamente em Spring Boot via annotations.
-- [ ] Definir API pública para usuários: `@Seeder`, `@Order`, `SeederLauncher.runAll()`.
-- [ ] Definir suporte a:
-  - Funções de classe (beans)
-  - Funções top-level Kotlin
-  - Execução automática no startup
-  - Execução manual via linha de comando ou flag (`--seed`)
-- [ ] Definir estrutura de pastas da lib e exemplos:
-  - `seeders/`, `core/`, `auto/`, `examples/`
+At a high level, the library provides three building blocks:
 
-## 2️⃣ Implementação do núcleo
+1. `Seeder`
+   A minimal contract for executable seeders.
 
-### 2.1 Anotações
+2. `AbstractDatabaseSeeder`
+   A base class for an aggregate seeder that orchestrates other seeders with `call<T>()`.
 
-- [ ] Criar `@Seeder`
-- [ ] Configurar `@Order` (usar Spring nativo)
-- [ ] Opcional: adicionar parâmetros como `name` ou `description` para logs
+3. Factory support
+   `AbstractFactory<T>` and `FactoryCollectionBuilder<T>` provide a small API for generating entities with `make()` and `times(n).make()`.
 
-### 2.2 Discoverer
+Runtime execution is controlled by Spring Boot properties:
 
-- [ ] Criar `SeederDiscoverer`
-  - Descobrir funções anotadas com `@Seeder` em beans Spring
-  - Descobrir funções top-level Kotlin
-  - Capturar ordem via `@Order`
-- [ ] Guardar lista de seeders com referência ao método/função e ordem
+- `spring.data.seeder.enabled`
+- `spring.data.seeder.target`
 
-### 2.3 Executor
+When seeding is enabled:
 
-- [ ] Criar `SeederExecutor`
-  - Receber lista de seeders do Discoverer
-  - Executar em ordem crescente de `@Order`
-  - Registrar logs detalhados (`Executando: UserSeeder.run()`)
-  - Tratar erros sem interromper execução dos outros seeders
+- if `target` is set, the library runs the matching `Seeder`
+- if `target` is not set, the library runs the single bean that extends `AbstractDatabaseSeeder`
 
-### 2.4 Launcher
+## Installation and initial setup
 
-- [ ] Criar `SeederLauncher`
-  - Orquestra discoverer + executor
-  - Permite execução **manual ou automática**
-  - Opção de execução condicional (ex.: via flag `--seed`)
+The repository already includes a working multi-module setup:
 
-## 3️⃣ Integração Spring Boot
+- `spring-data-seeder`: the library
+- `spring-data-seeder-gradle-plugin`: the Gradle plugin that adds `seedRun`
+- `example`: a runnable Spring Boot application using both
 
-- [ ] Criar `SeederAutoRunner`
-  - Implementar `ApplicationRunner` ou `SmartLifecycle`
-  - Chamar `SeederLauncher.runAll()` no startup
-  - Condicional via flag para pular execução se necessário
-- [ ] Testar execução no startup de um projeto Spring Boot de exemplo
+The current repository is the primary integration reference. Public distribution coordinates are not documented yet, so the most accurate setup is the one used by `example`.
 
-## 4️⃣ Estrutura de seeders
+### Example Gradle setup
 
-- [ ] Criar exemplos de seeders:
-  - `UserSeeder.kt`
-  - `ProductSeeder.kt`
-  - `DemoSeeder.kt`
-- [ ] Garantir que a execução respeite a ordem com `@Order`
-- [ ] Testar funções top-level Kotlin e métodos de classes
+```kotlin
+plugins {
+    id("org.springframework.boot")
+    id("io.spring.dependency-management")
+    kotlin("jvm")
+    kotlin("plugin.spring")
+    kotlin("plugin.jpa")
+    id("io.github.ygreis.spring-data-seeder")
+}
 
-## 5️⃣ Logging e UX
+extra["springBootMainClass"] = "com.example.ApplicationKt"
 
-- [ ] Adicionar logs claros de início/fim de cada seeder
-- [ ] Suporte a logs de erros sem interromper os seeders seguintes
-- [ ] Mostrar ordem de execução no log
-- [ ] Possível modo “dry-run” para listar seeders sem executar
+dependencies {
+    implementation(project(":spring-data-seeder"))
+}
+```
 
-## 6️⃣ Configuração avançada / extras
+### Spring Boot property
 
-- [ ] Permitir execução por **profiles** (dev, test, prod)
-- [ ] Suporte a **execução condicional** (`--seed` ou `spring.profiles.active`)
-- [ ] Possível integração com seeders parametrizados (ex: quantidade de registros)
-- [ ] CLI para gerar seeders automaticamente (opcional)
+Keep seeding disabled by default:
 
-## 7️⃣ Testes
+```properties
+spring.data.seeder.enabled=false
+```
 
-- [ ] Testar discoverer: todas as funções `@Seeder` são encontradas
-- [ ] Testar executor: ordem correta, execução completa
-- [ ] Testar runner automático (startup)
-- [ ] Testar runner manual (linha de comando)
-- [ ] Testar logs e tratamento de erros
-- [ ] Testar funções top-level Kotlin
+The Gradle task enables it only for seeding runs.
 
-## 8️⃣ Documentação
+## Quick example
 
-- [ ] README.md completo:
-  - Descrição da lib
-  - Estrutura de pastas
-  - Exemplo de seeder
-  - Instruções de uso automático e manual
-  - Vantagens e próximos passos
-- [ ] Exemplos de seeders em `examples/`
-- [ ] Sugestão de badges (build, maven central, licença)
+### Define a seeder
 
-## 9️⃣ Preparação para publicação
+```kotlin
+interface Seeder {
+    val name: String
+        get() = this::class.simpleName
+            ?: throw IllegalStateException("Seeder must have a simple name")
 
-- [ ] Configurar `build.gradle.kts` ou `pom.xml`
-- [ ] Configurar publicação para Maven Central / GitHub Packages
-- [ ] Testar versão release em projeto de exemplo
+    fun run()
+}
+```
 
+### Create an aggregate seeder
 
+```kotlin
+@Component
+class DatabaseSeeder(
+    applicationContext: ApplicationContext,
+) : AbstractDatabaseSeeder(applicationContext) {
 
-## Definições técnicas
+    override fun run() {
+        call<UserSeeder>()
+        call<ProductSeeder>()
+    }
+}
+```
 
-1. Precisamos definir se vamos usar um arquivo registrador ou fazer tudo a base de annotations
-<img width="841" height="368" alt="image" src="https://github.com/user-attachments/assets/d90a3ed1-65bb-4d60-a5b3-9d5fddd01969" />
+### Create a simple seeder
 
-2. Infra de pastas da lib
+```kotlin
+@Component
+class UserSeeder(
+    private val userFactory: UserFactory,
+    private val userRepository: UserRepository,
+) : Seeder {
 
-```text
-src/main/kotlin/com/spring/data/seeder
-├─ seeders/                # Todos os seeders criados pelos devs
-│   ├─ UserSeeder.kt
-│   ├─ ProductSeeder.kt
-│   └─ ... outros seeders
-├─ core/                   # Núcleo da lib
-│   ├─ SeederFunction.kt    # Interface funcional que representa uma função seeder
-│   ├─ SeederRunner.kt      # Executor que roda os seeders
-│   └─ annotations/         # Anotações da biblioteca
-│       ├─ Seeder.kt
-│       └─ Order.kt
-├─ launcher/               # Responsável por orquestrar a execução
-│   ├─ SeederLauncher.kt   # Combina discoverer e executor
-│   └─ SeederDiscoverer.kt # Descobre seeders no contexto Spring ou top-level
-├─ auto/                   # Integração automática com Spring Boot
-│   └─ SeederAutoRunner.kt  # Roda os seeders automaticamente no startup
-├─ examples/               # Exemplos de seeders para referência e testes
-│   └─ DemoSeeder.kt
-├─ config/                 # Configurações da lib (opcional)
-│   └─ SeederConfig.kt
+    override fun run() {
+        val users = userFactory.times(10).make()
+        userRepository.saveAll(users)
+    }
+}
+```
 
- ```
+## Running seeders
+
+Run the aggregate seeder:
+
+```bash
+./gradlew :example:seedRun
+```
+
+This uses the Gradle plugin task based on `JavaExec` and starts the Spring Boot application in non-web mode for seeding only.
+
+## Running a specific seeder
+
+Run one seeder by name:
+
+```bash
+./gradlew :example:seedRun -Pseeder=UserSeeder
+```
+
+The target matches the `Seeder.name` value, which defaults to the class simple name.
+
+## Factories and seeders
+
+The current factory API is intentionally small:
+
+```kotlin
+abstract class AbstractFactory<T> : Factory<T> {
+    fun make(): T
+    fun make(transform: (T) -> T): T
+    fun times(total: Int): FactoryCollectionBuilder<T>
+}
+```
+
+This supports:
+
+- `make()`
+- `make { ... }`
+- `times(n).make()`
+- `times(n).make { ... }`
+
+In the `example` module:
+
+- `UserFactory` creates fake users
+- `ProductFactory` creates fake products
+- `UserSeeder` persists users
+- `ProductSeeder` loads users and generates two products per user
+
+Example from `ProductSeeder`:
+
+```kotlin
+val products = productFactory.times(2).make { product ->
+    product.copy(
+        userId = user.id,
+        name = "${user.name} ${product.name}",
+    )
+}
+```
+
+The library does not persist entities for you. Factories create objects; seeders decide how to save them.
+
+## Reference example
+
+The `example` module is the main source of truth for practical usage. It demonstrates:
+
+- Spring Boot integration
+- H2 configuration
+- a single aggregate seeder
+- targeted seeders
+- simple factories
+- Gradle execution with `seedRun`
+
+If you are evaluating the project for adoption, start there.
+
+## Current status
+
+The project is functional and already supports the core seeding workflow used in the example application.
+
+Current scope:
+
+- explicit seeder orchestration with `AbstractDatabaseSeeder`
+- targeted or aggregate execution through Spring Boot properties
+- Gradle task for running seeders
+- basic factory support for object generation
+
+What is intentionally not included:
+
+- automatic seeder ordering
+- annotation scanning beyond standard Spring beans
+- automatic persistence in factories
+- complex factory DSLs
+
+## Roadmap
+
+Short-term improvements that make sense for the current scope:
+
+- more test coverage around runtime and plugin behavior
+- clearer publishing story for external consumption
+- more example scenarios and documentation
+
+## License
+
+This project is licensed under the MIT License. See [LICENSE](LICENSE).
+
+## Contributing
+
+Contributions are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md).
+
+## Code of Conduct
+
+Please read [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) before participating in issues or pull requests.
